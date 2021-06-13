@@ -4,7 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
 
 from .forms import BookingForm, UserForm
-from .models import Restaurant
+from .models import Booking, Restaurant
 
 
 def home_page(request):
@@ -65,7 +65,7 @@ def book_restaurant(request, restaurant_id):
         return redirect("table_booker:home")
 
     if request.method == "POST":
-        form = BookingForm(request.POST)
+        form = BookingForm(restaurant, request.POST)  # changed here
 
         if form.is_valid():
             booking = form.save(commit=False)
@@ -75,13 +75,21 @@ def book_restaurant(request, restaurant_id):
             messages.info(request, f"You successfully booked {restaurant.name}.")
             return redirect("table_booker:home")
     else:
-        form = BookingForm()
+        form = BookingForm(restaurant)
 
     return render(
         request=request,
         template_name="book_restaurant.html",
         context={"booking_form": form},
     )
+
+
+def my_bookings(request):
+    if not request.user.is_authenticated:
+        return redirect("table_booker:login")
+
+    context = {"bookings": Booking.objects.filter(user=request.user)}
+    return render(request, "my_bookings.html", context=context)
 
 
 def logout_page(request):
