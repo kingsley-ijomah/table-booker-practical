@@ -45,7 +45,7 @@ def signup_page(request):
             messages.success(request, "Registration successful.")
             return redirect("table_booker:home")
         messages.error(request, "Unsuccessful registration. Invalid information.")
-    form = UserForm
+    form = UserForm()
     return render(
         request=request, template_name="signup.html", context={"register_form": form},
     )
