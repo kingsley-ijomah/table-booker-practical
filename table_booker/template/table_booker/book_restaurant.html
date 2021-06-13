@@ -2,6 +2,8 @@
 
 {% block content %}
 <h1>Book Restaurant</h1>
+<h3>{{ restaurant.name }}</h3>
+
 <form method="POST">
   {% csrf_token %}
   {{ booking_form.as_p }}

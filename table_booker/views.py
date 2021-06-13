@@ -80,7 +80,7 @@ def book_restaurant(request, restaurant_id):
     return render(
         request=request,
         template_name="book_restaurant.html",
-        context={"booking_form": form},
+        context={"booking_form": form, "restaurant": restaurant},
     )
 
 

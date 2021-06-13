@@ -51,11 +51,20 @@ class BookingForm(forms.ModelForm):
         fields = (
             "table",
             "date",
+            "total_guests",
         )
 
     def clean(self):
         cleaned_data = super().clean()
         date = cleaned_data.get("date")
+        total_guests = cleaned_data.get("total_guests")
+        table = cleaned_data.get("table")
+
+        if total_guests:
+            if total_guests > table.capacity:
+                raise ValidationError(
+                    {"total_guests": [f"Maximum table capacity is {table.capacity}"]}
+                )
 
         if date:
             if date < timezone.now():
