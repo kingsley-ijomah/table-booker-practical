@@ -1,5 +1,5 @@
 <body>
-  {% include 'includes/messages.html' %}
+  <p>{% include 'includes/messages.html' %}<p>
 
   <a href="/">Home</a> |
   {% if request.user.is_authenticated %}
@@ -8,7 +8,7 @@
   {% else %}
     <a href="/signup">Signup</a>
   {% endif %}
-  
+
   {% block content %}
 
   {% endblock content %}
