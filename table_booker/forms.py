@@ -60,10 +60,15 @@ class BookingForm(forms.ModelForm):
         total_guests = cleaned_data.get("total_guests")
         table = cleaned_data.get("table")
 
-        if total_guests:
+        if total_guests is not None:
             if total_guests > table.capacity:
                 raise ValidationError(
                     {"total_guests": [f"Maximum table capacity is {table.capacity}"]}
+                )
+
+            if total_guests < 1:
+                raise ValidationError(
+                    {"total_guests": ["Cannot book 0 or less guests"]}
                 )
 
         if date:

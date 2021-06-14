@@ -361,6 +361,15 @@ class BookingFormTest(TestCase):
 
         self.assertTrue(form.is_valid())
 
+    def test_zero_capacity_booking(self):
+        self.data["total_guests"] = 0  # less than capacity
+        form = BookingForm(self.restaurant, self.data)
+
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["total_guests"], ["Cannot book 0 or less guests"],
+        )
+
 
 def book_date(days=3, hours=1, minutes=30, past=False):
     today = datetime.datetime.today()
