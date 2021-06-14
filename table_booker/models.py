@@ -6,7 +6,6 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=150)
     address1 = models.CharField(max_length=250)
     address2 = models.CharField(max_length=250)
-    postcode = models.CharField(max_length=12)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
