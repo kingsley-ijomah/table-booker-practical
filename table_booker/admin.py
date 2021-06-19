@@ -27,7 +27,6 @@ class RestaurantAdmin(admin.ModelAdmin):
         "name",
         "address1",
         "address2",
-        "postcode",
         "created_at",
         "modified_at",
     )

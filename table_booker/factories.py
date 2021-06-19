@@ -22,7 +22,6 @@ class RestaurantFactory(factory.django.DjangoModelFactory):
     name = "Golden Star Restaurant"
     address1 = "20 Temple Road"
     address2 = "London"
-    postcode = "E17 8BL"
 
 
 class TableFactory(factory.django.DjangoModelFactory):
@@ -61,6 +60,4 @@ class SettingFactory(factory.django.DjangoModelFactory):
         model = models.Setting
 
     restaurant = factory.SubFactory(RestaurantFactory)
-    advance_booking = 20
     min_guest = 2
-    max_guest = 12

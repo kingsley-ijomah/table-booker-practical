@@ -42,6 +42,7 @@ class BookingForm(forms.ModelForm):
 
     def __init__(self, restaurant, *args, **kwargs):
         super(BookingForm, self).__init__(*args, **kwargs)
+        self.restaurant = restaurant
         self.fields["table"].queryset = Table.objects.filter(
             restaurant_id=restaurant.id
         )
@@ -59,6 +60,7 @@ class BookingForm(forms.ModelForm):
         date = cleaned_data.get("date")
         total_guests = cleaned_data.get("total_guests")
         table = cleaned_data.get("table")
+        min_guest = self.restaurant.setting.min_guest
 
         if total_guests is not None:
             if total_guests > table.capacity:
@@ -71,6 +73,11 @@ class BookingForm(forms.ModelForm):
                     {"total_guests": ["Cannot book 0 or less guests"]}
                 )
 
+            if total_guests < min_guest:
+                raise ValidationError(
+                    {"total_guests": [f"Minimum guest bookable is: {min_guest}"]}
+                )
+
         if date:
             if date < timezone.now():
-                raise ValidationError("Date cannot be in the past")
+                raise ValidationError({"date": ["Date cannot be in the past"]})

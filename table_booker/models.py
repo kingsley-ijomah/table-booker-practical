@@ -6,7 +6,6 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=150)
     address1 = models.CharField(max_length=250)
     address2 = models.CharField(max_length=250)
-    postcode = models.CharField(max_length=12)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -59,9 +58,9 @@ class BusinessHour(models.Model):
 
 
 class Setting(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    advance_booking = models.IntegerField()
+    restaurant = models.OneToOneField(
+        Restaurant, on_delete=models.CASCADE, related_name="setting"
+    )
     min_guest = models.IntegerField()
-    max_guest = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)

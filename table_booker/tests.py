@@ -141,6 +141,7 @@ class TestBookingRestaurant(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.restaurant = RestaurantFactory()
+        self.setting = SettingFactory(restaurant=self.restaurant)
         self.table = TableFactory(restaurant=self.restaurant)
         self.url = f"/book-restaurant/{self.restaurant.id}"
 
@@ -287,6 +288,7 @@ class UpdateMyBookingsTests(TestCase):
     def setUp(self):
         self.user = UserFactory(username="janet")
         self.restaurant = RestaurantFactory()
+        self.setting = SettingFactory(restaurant=self.restaurant)
         self.table = TableFactory(restaurant=self.restaurant)
         self.booking = BookingFactory(
             user=self.user, restaurant=self.restaurant, table=self.table
@@ -340,13 +342,18 @@ class UpdateMyBookingsTests(TestCase):
 
 class BookingFormTest(TestCase):
     def setUp(self):
+        self.capacity = 7
+        self.min_guest = 3
         self.restaurant = RestaurantFactory()
-        self.table = TableFactory(restaurant=self.restaurant, capacity=3)
+        self.setting = SettingFactory(
+            restaurant=self.restaurant, min_guest=self.min_guest
+        )
+        self.table = TableFactory(restaurant=self.restaurant, capacity=self.capacity)
         self.date = book_date()  # future date
         self.data = {"table": self.table.id, "date": self.date}
 
     def test_over_capacity_booking(self):
-        self.data["total_guests"] = 8  # over capacity
+        self.data["total_guests"] = self.capacity + 1
 
         form = BookingForm(self.restaurant, self.data)
         self.assertFalse(form.is_valid())
@@ -356,19 +363,19 @@ class BookingFormTest(TestCase):
         )
 
     def test_exact_capacity_booking(self):
-        self.data["total_guests"] = 3  # exact capacity
+        self.data["total_guests"] = self.capacity
         form = BookingForm(self.restaurant, self.data)
 
         self.assertTrue(form.is_valid())
 
     def test_less_than_capacity_booking(self):
-        self.data["total_guests"] = 2  # less than capacity
+        self.data["total_guests"] = self.capacity - 1
         form = BookingForm(self.restaurant, self.data)
 
         self.assertTrue(form.is_valid())
 
     def test_zero_capacity_booking(self):
-        self.data["total_guests"] = 0  # less than capacity
+        self.data["total_guests"] = 0
         form = BookingForm(self.restaurant, self.data)
 
         self.assertFalse(form.is_valid())
@@ -376,54 +383,28 @@ class BookingFormTest(TestCase):
             form.errors["total_guests"], ["Cannot book 0 or less guests"],
         )
 
+    def test_exact_min_guest(self):
+        self.data["total_guests"] = self.min_guest
+        form = BookingForm(self.restaurant, self.data)
 
-class BookingFormMinMaxTest(TestCase):
-    def setUp(self):
-        self.restaurant = RestaurantFactory()
-        self.setting = SettingFactory(
-            restaurant=self.restaurant, min_guest=3, max_guest=5
-        )
-        self.table = TableFactory(restaurant=self.restaurant, capacity=7)
-        self.date = book_date()  # future date
-        self.data = {"table": self.table.id, "date": self.date}
+        self.assertTrue(form.is_valid())
 
-    def test_below_min_guest_booking(self):
-        self.data["total_guests"] = 2
+    def test_less_than_min_guest(self):
+        self.data["total_guests"] = self.min_guest - 1
         form = BookingForm(self.restaurant, self.data)
 
         self.assertFalse(form.is_valid())
         self.assertEqual(
             form.errors["total_guests"],
-            [f"Minimum allowed guest total is: {self.setting.min_guest}"],
+            [f"Minimum guest bookable is: {self.min_guest}"],
         )
 
-    def test_above_max_guest_booking(self):
-        self.data["total_guests"] = 6
+    def test_booking_in_the_past(self):
+        self.data["date"] = book_date(days=3, past=True)
         form = BookingForm(self.restaurant, self.data)
 
+        self.assertEquals(form.errors["date"], ["Date cannot be in the past"])
         self.assertFalse(form.is_valid())
-        self.assertEqual(
-            form.errors["total_guests"],
-            [f"Maximum allowed guest total is: {self.setting.max_guest}"],
-        )
-
-    def test_within_min_max_guest_booking(self):
-        self.data["total_guests"] = 4
-        form = BookingForm(self.restaurant, self.data)
-
-        self.assertTrue(form.is_valid())
-
-    def test_exact_min_guest_booking(self):
-        self.data["total_guests"] = 3
-        form = BookingForm(self.restaurant, self.data)
-
-        self.assertTrue(form.is_valid())
-
-    def test_exact_max_guest_booking(self):
-        self.data["total_guests"] = 5
-        form = BookingForm(self.restaurant, self.data)
-
-        self.assertTrue(form.is_valid())
 
 
 def book_date(days=3, hours=1, minutes=30, past=False):
